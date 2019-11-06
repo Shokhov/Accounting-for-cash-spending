@@ -1,8 +1,25 @@
-#include <QCoreApplication>
+#include <stdio.h>
+#include <stdlib.h>
 
-int main(int argc, char *argv[])
+/*Мои файлы*/
+#include "BD_MaSoS.h"
+#include "BD_MaSoS.c"
+
+
+
+int main()
 {
-    QCoreApplication a(argc, argv);
 
-    return a.exec();
+
+
+
+
+
+
+
+
+
+
+
+    return 0;
 }
