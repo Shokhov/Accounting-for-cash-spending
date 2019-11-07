@@ -4,26 +4,45 @@
 
 #include <stdio.h>
 
-#define ERROR /*error*/
 #define Number_of_files 2
 
-/*Функции:*/
-/*Запись и вывод данных файлов*/
-int BD_write(char *file_name, char *mode, void *ptn, int size_ptn);
-int BD_read(char *file_name, char *mode, void *ptn, int size_ptn);
+#define ERROR /*error*/
+#define Error_no_file 1
+#define Error_damaged_file 2
 
+/*Прототипы:*/
+/*Запись и вывод данных файлов*/
+int BD_write(char *file_name, char *mode, void *data, long *size_data, int index);
+int BD_read(char *file_name, char *mode, void *data, long *size_data, int index);
+
+/*Проверки БД*/
 void BD_check();
 
-/*-------------------------------------------------------------------------*/
+/*Манипуляции с БД*/
+int BD_add(char *filename, void *data, long *size_data);
+int BD_change(char *filename, void *data, long *size_data, int index);
+int BD_remove(char *filename, void *data, long *size_data, int index);
+int BD_output(char *filename, void *data, long *size_data, void *fun);
+int BD_out(char *filename, void *data, long *size_data, int index, void *fun);
+
+/*Начальные данные*/
+/*Список файлов БД*/
+char *BD_list_fails[] = { "Employees.bin", "Nomenclature.bin" };
+
+
+/*-----Функции ввода вывода--------------------------------------------------------------------*/
 /*Записываем строчку данных в фаил*/
-int BD_write(char *file_name, char *mode, void *ptn, int size_ptn){
-    char *c = (char *)ptn;
+int BD_write(char *file_name, char *mode, void *data, long *size_data, int index=-1){
+    char *c = (char *)data;
 
     FILE *file=NULL;
-    if((file = fopen(file_name,mode))==NULL){ ERROR; return 1; }
+    if((file = fopen(file_name,mode))==NULL){ ERROR; return Error_no_file; }
+
+    /*Устанавливаем указатель на нужной строчки*/
+    if(index != -1) fseek(file,index**size_data,SEEK_SET);
 
     /*Посимвольно заносим данные*/
-    for(int i=0;i<size_ptn;i++){
+    for(int i=0;i<*size_data;i++){
         putc(*c++,file);
     }
 
@@ -32,33 +51,30 @@ int BD_write(char *file_name, char *mode, void *ptn, int size_ptn){
 }
 
 /*Читаем строчку данных в файле*/
-int BD_read(char *file_name, char *mode, void *ptn, int size_ptn){
-    char *c = (char *)ptn; /*Указатель на структуру*/
+int BD_read(char *file_name, char *mode, void *data, long *size_data, int index=-1){
+    char *c = (char *)data; /*Указатель на структуру*/
     int simvol; /*Считеный символ*/
 
     FILE *file=NULL;
-    if((file = fopen(file_name,mode))==NULL){ ERROR; return 1;}
+    if((file = fopen(file_name,mode))==NULL){ ERROR; return Error_no_file;}
+
+    /*Устанавливаем указатель на нужной строчки*/
+    if(index != -1) fseek(file,index**size_data,SEEK_SET);
 
     /*Посимволььно считываем данные*/
-    for(int i=0;i<size_ptn;i++){
-        if((simvol = getc(file))==EOF){ ERROR; break;}
+    for(int i=0;i<*size_data;i++){
+        /*Проверка достигнут конец файла или файл поврежден*/
+        if((simvol = getc(file))==EOF){ ERROR; fclose(file); return (i && i<size_data)?Error_damaged_file:EOF; }
 
         *c++ = simvol;
     }
 
     fclose(file);
+
     return 0;
 }
-/*-------------------------------------------------------------------------*/
-
-/*Список файлов БД*/
-char *BD_list_fails[] = { "Employees.bin", "Nomenclature.bin" };
-
-
-/*Функция:
-Получает: ничего
-Делает: проверят наличия бинарных файлов БД, если ненаходит, то создает заного пустой фаил
-Возвращает: ничего*/
+/*---Функции тестирования и проверки----------------------------------------------------------------------*/
+/*Проверят наличия бинарных файлов БД, если ненаходит, то создает заного пустой фаил*/
 void BD_check(){
     /*Перебираем файлы БД*/
     for(int i=0;i<Number_of_files;i++){
@@ -69,4 +85,93 @@ void BD_check(){
     }
 }
 
+/*-----Функции для работы с БД--------------------------------------------------------------------*/
+
+/*Добавляем запись в файл БД*/
+int BD_add(char *filename, void *data, long *size_data){
+    return BD_write(filename,"ab",data,size_data);
+}
+
+/*Изменяет запись в файле БД*/
+int BD_change(char *filename, void *data, long *size_data, int index){
+    return BD_write(filename,"r+b",data,size_data,index);
+}
+
+/*Удаляет запись в файле БД*/
+int BD_remove(char *filename, void *data, long *size_data, int index){
+    data->kod=-1; /*Если код установлен в "-1", то эти данные удалены*/
+    return BD_write(filename,"r+b",data,size_data,index);
+}
+
+/*Вывод всех записей из файла БД*/
+int BD_output(char *filename, void *data, long *size_data, void *fun){
+    int count=0;
+    while( !BD_read(filename,"rb",data,size_data,count) ){
+        /*Выводим данные*/
+        fun(data,count);
+        count++;
+    }
+    return count?1:0;
+}
+
+/*Вывод записи из файла БД*/
+int BD_out(char *filename, void *data, long *size_data, int index, void *fun){
+    if(BD_read(filename,"rb",data,size_data,index)){ERROR;return 1;}
+    fun(data,index);
+    return 0;
+}
+
+
+
 /*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
