@@ -1,10 +1,12 @@
 /*Структуры Базы данных*/
+/*То что тут описанно не рационально, можно было ограничится одной структурой или найти другой подход,
+но так красиво*/
 
 /*Справочники:*/
 struct Employees{ /*Справочник сотрудников*/
     int code;
     char name[50];
-    short age;
+    int age;
     char position[50];
     int salary;
 }E_temp;
@@ -51,8 +53,10 @@ struct Leftovers{ /*Считает сколько осталось на скла
     int summa;
 }L_temp;
 
-
-
+/*Размеры структур (ширина таблиц)*/
+long E_size=sizeof(E_temp), N_size=sizeof(N_temp), S_size=sizeof(S_temp), C_size=sizeof(C_temp);/*Справочники*/
+long M_size=sizeof(M_temp), D_size=sizeof(D_temp);                                              /*регистры сведеней*/
+long L_size=sizeof(L_temp);                                                                     /*регистры накоплений*/
 
 
 
