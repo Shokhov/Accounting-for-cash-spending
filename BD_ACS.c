@@ -22,15 +22,16 @@ int BD_out(char *filename, void *data, long size_info, long size_data, int index
 int BD_check();
 
 /*Манипуляции с БД*/
-int BD_in_info(unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
-//int BD_add(char *filename, void *data, long size_data);
-//int BD_change(char *filename, void *data, long size_data, int index);
+int BD_in_info(unsigned long new_code, unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
+int BD_add(char *filename, void *data, long size_info, long size_data);
+int BD_change(char *filename, void *data, long size_info, long size_data, int index);
 //int BD_remove(char *filename, long size_data, int index);
 //int search_by_code(char *filename, void *data, long size_data, int search_code);
 
 /*Начальные данные*/
 struct Info
 {
+    unsigned long new_code;
     unsigned long number_of_records;
     double amount;
     double average_amount;
@@ -41,6 +42,7 @@ unsigned short size_info = (unsigned short)sizeof(Info_temp);
 struct Table
 {
     unsigned long code;
+    unsigned long number;
     char date[11];
     double amount;
     double average_amount;
@@ -108,7 +110,12 @@ int BD_output(char *filename, void *data, long size_info, long size_data){
 
 /*Вывод записи из файла БД*/
 int BD_out(char *filename, void *data, long size_info, long size_data, int index){
-    return BD_read(filename,"rb",data,size_info,size_data,index);
+    if(BD_read(filename,"rb",data,size_info,size_data,index)){return Error_no_file;}
+
+    unsigned long *code = (unsigned long *)data;
+    if(*code == -1){return Error_no_file;}
+
+    return OK;
 }
 
 /*---Функции тестирования и проверки----------------------------------------------------------------------*/
@@ -121,7 +128,7 @@ int BD_check(){
 
     if((file=fopen(BD_file,"rb")) == NULL){
         fopen(BD_file,"wb");
-        return BD_in_info(0,0,0,600);
+        return BD_in_info(0,0,0,0,600);
     }
 
     fclose(file);
@@ -130,11 +137,13 @@ int BD_check(){
 
 /*-----Функции для работы с БД--------------------------------------------------------------------*/
 /*Ввод Info*/
-int BD_in_info(unsigned long number_of_records,
+int BD_in_info(unsigned long new_code,
+               unsigned long number_of_records,
                double amount,
                double average_amount,
                unsigned short limit)
 {
+    Info_temp.new_code=new_code;
     Info_temp.number_of_records=number_of_records;
     Info_temp.amount=amount;
     Info_temp.average_amount=average_amount;
@@ -150,27 +159,27 @@ int BD_add(char *filename, void *data, long size_info, long size_data){
 }
 
 /*Изменяет запись в файле БД*/
-//int BD_change(char *filename, void *data, long size_data, int index){
-//    return BD_write(filename,"r+b",data,size_data,index);
-//}
+int BD_change(char *filename, void *data, long size_info, long size_data, int index){
+    return BD_write(filename,"r+b",data,size_info,size_data,index);
+}
 
 /*Удаляет запись в файле БД*/
-//int BD_remove(char *filename, long size_data, int index){
-//    int code=-1; /*Если код равен "-1", то запись удалена*/
-//    int size_code = sizeof(code);
-//    char *c = (char *)&code;
+int BD_remove(char *filename, long size_info, long size_data, int index){
+    unsigned long  code=-1; /*Если код равен "-1", то запись удалена*/
+    int size_code = sizeof(code);
+    char *c = (char *)&code;
 
-//    FILE *file=NULL;
-//    if((file = fopen(filename,"r+b"))==NULL){ ERROR; return Error_no_file; }
-//    /*Устанавливаем указатель на нужной строчки*/
-//    if(index != -1) fseek(file,index*size_data,SEEK_SET);
-//    /*Посимвольно заносим данные*/
-//    for(int i=0;i<size_code;i++){
-//        putc(*c++,file);
-//    }
-//    fclose(file);
-//    return 0;
-//}
+    FILE *file=NULL;
+    if((file = fopen(filename,"r+b"))==NULL){ return Error_no_file; }
+    /*Устанавливаем указатель на нужной строчки*/
+    if(index != -1) fseek(file,size_info+index*size_data,SEEK_SET);
+    /*Посимвольно заносим данные*/
+    while(size_code--){
+        putc(*c++,file);
+    }
+    fclose(file);
+    return OK;
+}
 
 /*Ищем запись по коду*/
 //int search_by_code(char *filename, void *data, long size_data, int search_code){
