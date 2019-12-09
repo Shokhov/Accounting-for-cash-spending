@@ -9,6 +9,9 @@ extern int BD_out(char *filename, void *data, long size_info, long size_data, in
 /*Проверки БД*/
 extern int BD_check();
 
+/*Манипуляции с БД*/
+int BD_in_info(unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
+
 /*Начальные данные*/
 extern struct Info Info_temp;
 extern struct Table Table_temp;

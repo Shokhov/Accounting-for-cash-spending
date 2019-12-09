@@ -22,7 +22,7 @@ int BD_out(char *filename, void *data, long size_info, long size_data, int index
 int BD_check();
 
 /*Манипуляции с БД*/
-int BD_in_info(unsigned long number_of_records, unsigned long amount, unsigned long average_amount, unsigned short limit);
+int BD_in_info(unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
 //int BD_add(char *filename, void *data, long size_data);
 //int BD_change(char *filename, void *data, long size_data, int index);
 //int BD_remove(char *filename, long size_data, int index);
@@ -32,8 +32,8 @@ int BD_in_info(unsigned long number_of_records, unsigned long amount, unsigned l
 struct Info
 {
     unsigned long number_of_records;
-    unsigned long amount;
-    unsigned long average_amount;
+    double amount;
+    double average_amount;
     unsigned short limit;
 } Info_temp;
 unsigned short size_info = (unsigned short)sizeof(Info_temp);
@@ -42,8 +42,8 @@ struct Table
 {
     unsigned long code;
     char date[11];
-    long amount;
-    long average_amount;
+    double amount;
+    double average_amount;
     char limit_exceeded; /*0 or 1*/
 } Table_temp;
 unsigned short size_table = (unsigned short)sizeof(Table_temp);
@@ -131,8 +131,8 @@ int BD_check(){
 /*-----Функции для работы с БД--------------------------------------------------------------------*/
 /*Ввод Info*/
 int BD_in_info(unsigned long number_of_records,
-               unsigned long amount,
-               unsigned long average_amount,
+               double amount,
+               double average_amount,
                unsigned short limit)
 {
     Info_temp.number_of_records=number_of_records;
