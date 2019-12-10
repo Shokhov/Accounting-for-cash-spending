@@ -8,12 +8,12 @@
 
 /*Прототипы*/
 /*Функции Меню*/
-void menu(); /*меню*/
+int menu(); /*меню*/
 
 /*Функции манипуляции с данными*/
-void write_data(); /*Ввод данных*/
-void change_data();/*Изменить данные*/
-void remove_data();/*Удалить запись*/
+int write_data(); /*Ввод данных*/
+int change_data();/*Изменить данные*/
+int remove_data();/*Удалить запись*/
 
 /*Функции вывода*/
 int display_all_records();/*Вывод всех записей*/
@@ -31,14 +31,14 @@ int main()
     if(BD_check()==3){return Error;} // Проверяем базу данных. Ошибка выходим
     if(BD_out(BD_file,&Info_temp,0,size_info,-1)==Error_no_file){return Error;} // Получаем начальную информацию
 
-    menu(); //Запуск меню
+    if(menu()){return Error;} //Запуск меню
 
     printf("\nВыход\n");
     return OK;
 }
 
 /*-----Функции Меню--------------------------------------------------------------------*/
-void menu()
+int menu()
 {
     int choice;
     information_output(); /*выводим информацию*/
@@ -56,21 +56,20 @@ void menu()
 
         switch (choice) {
             case 1: information_output(); break;
-            case 2: write_data(); break;
+            case 2: if(write_data()){return Error;} break;
             case 3: change_data(); break;
             case 4: remove_data(); break;
             case 5: display_all_records(); break;
-            default: /*Выход*/ return;
+            default: /*Выход*/ return OK;
         }
     }
-
-
+    return OK;
 }
 
 
 /*-----Функции манипуляции с данными--------------------------------------------------------------------*/
 /*Ввод данных*/
-void write_data()
+int write_data()
 {
     int date;
 
@@ -92,22 +91,23 @@ void write_data()
         Table_temp.average_amount = (Info_temp.average_amount = (Info_temp.amount += Table_temp.amount)/Info_temp.number_of_records);
         Table_temp.limit_exceeded = 48+(Table_temp.amount>Info_temp.limit);
 
-        BD_add(BD_file,&Table_temp,size_info,size_table);
-        BD_in_info(Info_temp.new_code,Info_temp.number_of_records,Info_temp.amount,Info_temp.average_amount,Info_temp.limit);
+        if(BD_add(BD_file,&Table_temp,size_info,size_table)){return Error;}
+        if(BD_in_info(Info_temp.new_code,Info_temp.number_of_records,Info_temp.amount,Info_temp.average_amount,Info_temp.limit)){return Error;}
     }
+    return OK;
 }
 
 /*Изменить данные*/
-void change_data()
+int change_data()
 {
     int index,choice;
     double temp_amount,def_amount,temp_info_amount;
 
-    if(display_all_records()){return;}
-    if(code_selection(&index)){return;}
+    if(display_all_records()){return Error_no_file;}
+    if(code_selection(&index)){return Error_no_file;}
 
     printf("\nПоля для изменения:\n    1) Дата\n    2) Сумма\nВыберите поле: ");
-    if(scanf("%d",&choice) != 1 || choice<1 || choice>2){return;}
+    if(scanf("%d",&choice) != 1 || choice<1 || choice>2){return OK;}
 
     switch(choice){
         case 1:
@@ -126,13 +126,13 @@ void change_data()
         break;
         case 2:
             printf("Введите сумму: ");
-            if(scanf("%lf",&temp_amount)!=1 || !temp_amount){return;}
+            if(scanf("%lf",&temp_amount)!=1 || !temp_amount){return OK;}
 
             //Получаем данную запись, если она есть
             if(BD_out(BD_file,&Table_temp,size_info,size_table,index)!=Error_no_file){
 
                 def_amount = temp_amount - Table_temp.amount; // разница сумм
-                if(!def_amount){return;}
+                if(!def_amount){return OK;}
 
                 //находим общую сумму на тот момент [Кол-во_записей*Сред.]
                 temp_info_amount = Table_temp.number*Table_temp.average_amount+def_amount;
@@ -152,26 +152,29 @@ void change_data()
             }
         break;
     }
+    return OK;
 }
 
 /*Удалить запись*/
-void remove_data()
+int remove_data()
 {
     int index;
-    if(display_all_records()){return;}
-    if(code_selection(&index)){return;}
+    if(display_all_records()){return Error_no_file;}
+    if(code_selection(&index)){return Error_no_file;}
 
-    if(BD_out(BD_file,&Table_temp,size_info,size_table,index)==Error_no_file){return;} // читаем запись
+    if(BD_out(BD_file,&Table_temp,size_info,size_table,index)==Error_no_file){return Error_no_file;} // читаем запись
     Info_temp.amount -= Table_temp.amount;
 
     change_all_entries(index,Info_temp.new_code,Table_temp.average_amount*Table_temp.number-Table_temp.amount,-1); // все среднии значения меняем
 
-    BD_remove(BD_file,size_info,size_table,index); // удаляем запись
+    if(BD_remove(BD_file,size_info,size_table,index)==EOF){return Error_no_file;} // удаляем запись
 
     //последствия удаления
     Info_temp.number_of_records--;
     Info_temp.average_amount = Info_temp.amount/Info_temp.number_of_records;
     BD_in_info(Info_temp.new_code,Info_temp.number_of_records,Info_temp.amount,Info_temp.average_amount,Info_temp.limit);
+
+    return OK;
 }
 
 /*-----Функции вывода--------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /*Функции для работы с Базой Данных приложения Accounting-for-cash-spending.
     - Создания/Проверка БД
-    - Функции: Добавления, Изменения, Удаления, Поиска, Оптимизации БД*/
+    - Функции: Добавить, Изменить, Удалить*/
 
 #include <stdio.h>
 #include <sys/stat.h> /*Работает только в Linux*/
@@ -31,7 +31,7 @@ int BD_remove(char *filename, long size_info, long size_data, int index);
 /*Начальные данные*/
 struct Info
 {
-    unsigned long new_code;
+    long new_code;
     unsigned long number_of_records;
     double amount;
     double average_amount;
@@ -41,7 +41,7 @@ unsigned short size_info = (unsigned short)sizeof(Info_temp);
 
 struct Table
 {
-    unsigned long code;
+    long code;
     unsigned long number;
     char date[11];
     double amount;
@@ -64,7 +64,7 @@ int BD_write(char *file_name, char *mode, void *data, long size_info, long size_
 
     /*Посимвольно заносим данные*/
     for(int i=0;i<size_data;i++){
-        putc(*c++,file);
+        if(putc(*c++,file) == EOF){return EOF;}
     }
 
     fclose(file);
@@ -112,7 +112,7 @@ int BD_output(char *filename, void *data, long size_info, long size_data){
 int BD_out(char *filename, void *data, long size_info, long size_data, int index){
     if(BD_read(filename,"rb",data,size_info,size_data,index)){return Error_no_file;}
 
-    unsigned long *code = (unsigned long *)data;
+    long *code = (long *)data;
     if(*code == -1){return Error_no_file;}
 
     return OK;
@@ -171,65 +171,11 @@ int BD_remove(char *filename, long size_info, long size_data, int index){
     if(index != -1) fseek(file,size_info+index*size_data,SEEK_SET);
     /*Посимвольно заносим данные*/
     while(size_code--){
-        putc(*c++,file);
+        if(putc(*c++,file)==EOF){return EOF;}
     }
     fclose(file);
     return OK;
 }
-
-/*Ищем запись по коду*/
-//int search_by_code(char *filename, void *data, long size_data, int search_code){
-//    int code;
-//    long size_code = sizeof(code);
-//    int simvol;
-//    char *c = NULL;
-
-//    FILE *file=NULL;
-//    if((file = fopen(filename,"rb"))==NULL){ ERROR; return Error_no_file; }
-
-//    /*перебираем весь фаил*/
-//    while(1){
-//        c = (char *)&code;
-//        /*Читаем только код*/
-//        for(int i=0;i<size_code;i++){
-//            if((simvol=fgetc(file))==EOF){ fclose(file); return -1; }
-//            *c++ = simvol;
-//        }
-
-//        /*Если найден код записываем строчку данных*/
-//        if(search_code == code){
-//            c = (char *)data;
-//            fseek(file,-size_code,SEEK_CUR);
-//            for(int i=0;i<size_data;i++){
-//                if((simvol=fgetc(file))==EOF){ fclose(file); return 1; }
-//                *c++ = simvol;
-//            }
-//            break;
-//        }
-//        fseek(file,size_data-size_code,SEEK_CUR);
-//    }
-//    fclose(file);
-
-//    return 0;
-//}
-
-
-
-/*-------------------------------------------------------------------------*/
-
-
-
-/*-------------------------------------------------------------------------*/
-
-
-
-/*-------------------------------------------------------------------------*/
-
-
-
-/*-------------------------------------------------------------------------*/
-
-
 
 /*-------------------------------------------------------------------------*/
 
