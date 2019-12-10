@@ -25,7 +25,7 @@ int BD_check();
 int BD_in_info(unsigned long new_code, unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
 int BD_add(char *filename, void *data, long size_info, long size_data);
 int BD_change(char *filename, void *data, long size_info, long size_data, int index);
-//int BD_remove(char *filename, long size_data, int index);
+int BD_remove(char *filename, long size_info, long size_data, int index);
 //int search_by_code(char *filename, void *data, long size_data, int search_code);
 
 /*Начальные данные*/
@@ -137,11 +137,7 @@ int BD_check(){
 
 /*-----Функции для работы с БД--------------------------------------------------------------------*/
 /*Ввод Info*/
-int BD_in_info(unsigned long new_code,
-               unsigned long number_of_records,
-               double amount,
-               double average_amount,
-               unsigned short limit)
+int BD_in_info(unsigned long new_code,unsigned long number_of_records,double amount,double average_amount,unsigned short limit)
 {
     Info_temp.new_code=new_code;
     Info_temp.number_of_records=number_of_records;

@@ -10,7 +10,10 @@ extern int BD_out(char *filename, void *data, long size_info, long size_data, in
 extern int BD_check();
 
 /*Манипуляции с БД*/
-int BD_in_info(unsigned long new_code, unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
+extern int BD_in_info(unsigned long new_code, unsigned long number_of_records, double amount, double average_amount, unsigned short limit);
+extern int BD_add(char *filename, void *data, long size_info, long size_data);
+extern int BD_change(char *filename, void *data, long size_info, long size_data, int index);
+extern int BD_remove(char *filename, long size_info, long size_data, int index);
 
 /*Начальные данные*/
 extern struct Info Info_temp;
